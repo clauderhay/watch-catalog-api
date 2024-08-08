@@ -1,73 +1,88 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Watch API Catalog
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Hello, this is my submission for the Assessment on the Watch API Catalog.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Clone Repository
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Installation
+Make sure you clone the repository in your IDE or clone it via git bash.
 
 ```bash
-$ npm install
+git clone https://github.com/clauderhay/watch-catalog-api.git
 ```
 
-## Running the app
+## Project Setup
+
+First is to install necessary dependencies
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Test
+Since we're using typeorm, make sure you have a server host ready so you won't have to manually create the table for data persistence.
+
+Enter the necessary credentials in the data-source.ts file
+
+```javascript
+export const dataSourceOptions: DataSourceOptions = {
+  type: 'postgres',
+  host: 'localhost',
+  port: 5432,
+  username: 'root',
+  password: 'password',
+  database: 'watch-catalog',
+  synchronize: false,
+  logging: false,
+  entities: [__dirname + '/**/*.entity{.ts,.js}'],
+  migrations: ['dist/database/migrations/*.js'],
+};
+```
+
+### Generate a Migration script to create the necessary table in the database
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run typeorm:generate
 ```
 
-## Support
+After generating, make sure you migrate the generated script.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+npm run typeorm:migrate
+```
 
-## Stay in touch
+Once the table has been created, we can now start the project by building the project first, then running it:
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+npm run build
 
-## License
+npm start
+```
 
-Nest is [MIT licensed](LICENSE).
+Congratulations!
+
+## Swagger API
+
+Navigate to the swagger to check the endpoints: [Watch Catalog API](http://localhost:3000/api)
+
+You can now do testing on the endpoints and make sure you input the correct format for the each request.
+
+PS. Search Functionality (by name and reference number) and Pagination is added on the list of watches ( /watches ) endpoint.
+
+## Unit Test
+
+I'm not a fan of Unit tests. But what I made was to cover all endpoints and making sure that each one is working properly.
+
+Run the test:
+
+```bash
+npm run test
+```
+
+This is a unit test of the Controller.
+
+## Additional Information
+
+This is a very basic coding structure of what was being asked for the assessment.
+
+But a good highlight about this is that i've implemented a CQRS-pattern making sure that the read and write functions are segregated.
+
+I also would like to point out that I haven't really added any comments within my code, although I know it's good practice to do so, but as far as readability, it's very straight-forward and how it is structured could give you a good feel of how easy it is to navigate the whole project.
