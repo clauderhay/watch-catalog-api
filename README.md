@@ -63,9 +63,9 @@ Congratulations!
 
 Navigate to the swagger to check the endpoints: [Watch Catalog API](http://localhost:3000/api)
 
-You can now do testing on the endpoints and make sure you input the correct format for the each request.
+You can now do testing on the endpoints and make sure you input the correct format for each request.
 
-PS. Search Functionality (by name and reference number) and Pagination is added on the list of watches ( /watches ) endpoint.
+PS. Search Functionality (by name and reference number) and Pagination is added on the list of watches ( /watches/search ) endpoint.
 
 ## Unit Test
 
