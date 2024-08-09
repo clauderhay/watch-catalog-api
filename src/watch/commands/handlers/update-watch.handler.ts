@@ -17,15 +17,22 @@ export class UpdateWatchCommandHandler
 
   public async execute(command: UpdateWatchCommand): Promise<Watch> {
     const { id, name, brand, referenceNumber } = command;
-    const watch = await this.repo.findOne({ where: { id } });
-    if (isNilOrEmpty(watch)) {
-      throw new NotFoundException(`Watch with ID ${id} not found`);
+
+    try {
+      const watch = await this.repo.findOneBy({ id: id });
+      if (isNilOrEmpty(watch)) {
+        throw new NotFoundException(`Watch with ID ${id} not found`);
+      }
+
+      if (name !== undefined) watch.name = name;
+      if (brand !== undefined) watch.brand = brand;
+      if (referenceNumber !== undefined)
+        watch.referenceNumber = referenceNumber;
+
+      return await this.repo.save(watch);
+    } catch (error) {
+      console.error('Error updating watch:', error);
+      throw new Error('Error updating watch');
     }
-
-    if (name !== undefined) watch.name = name;
-    if (brand !== undefined) watch.brand = brand;
-    if (referenceNumber !== undefined) watch.referenceNumber = referenceNumber;
-
-    return this.repo.save(watch);
   }
 }

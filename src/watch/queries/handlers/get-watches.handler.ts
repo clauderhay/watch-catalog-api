@@ -4,7 +4,6 @@ import { Watch } from 'src/database/entities/watch.entity';
 import { Repository } from 'typeorm';
 import { GetWatchesQuery } from '../implementation/get-watches.query';
 import { PaginatedResult } from 'src/watch/models/paginated-result.model';
-
 @QueryHandler(GetWatchesQuery)
 export class GetWatchesQueryHandler implements IQueryHandler<GetWatchesQuery> {
   constructor(
@@ -14,16 +13,16 @@ export class GetWatchesQueryHandler implements IQueryHandler<GetWatchesQuery> {
   public async execute(
     query: GetWatchesQuery,
   ): Promise<PaginatedResult<Watch>> {
-    const { name, referenceNumber, page, perPage } = query;
+    const { name, referenceNumber, page = 1, perPage = 10 } = query;
 
     const qb = this.repo.createQueryBuilder('watch');
 
     if (name) {
-      qb.andWhere('watch.name ILIKE :name', { name: `%${name}%` });
+      qb.andWhere('watch.name LIKE :name', { name: `%${name}%` });
     }
 
     if (referenceNumber) {
-      qb.andWhere('watch.referenceNumber ILIKE :referenceNumber', {
+      qb.andWhere('watch.referenceNumber LIKE :referenceNumber', {
         referenceNumber: `%${referenceNumber}%`,
       });
     }

@@ -28,24 +28,25 @@ export class WatchService {
   async getWatches(
     pageableFilter: PageableFilter,
   ): Promise<PaginatedResult<Watch>> {
-    const { name, referenceNumber, page = 1, perPage = 10 } = pageableFilter;
+    const { page, perPage, name, referenceNumber } = pageableFilter;
+
     return this.queryBus.execute(
       new GetWatchesQuery(name, referenceNumber, page, perPage),
     );
   }
 
-  async getWatchById(id: string): Promise<Watch> {
+  async getWatchById(id: number): Promise<Watch> {
     return this.queryBus.execute(new GetWatchQuery(id));
   }
 
-  async updateWatch(id: string, updateWatch: UpdateWatch): Promise<Watch> {
+  async updateWatch(id: number, updateWatch: UpdateWatch): Promise<Watch> {
     const { name, brand, referenceNumber } = updateWatch;
     return this.commandBus.execute(
       new UpdateWatchCommand(id, name, brand, referenceNumber),
     );
   }
 
-  async deleteWatch(id: string): Promise<void> {
+  async deleteWatch(id: number): Promise<boolean> {
     return this.commandBus.execute(new DeleteWatchCommand(id));
   }
 }

@@ -1,9 +1,9 @@
 import { CommandBase } from 'src/common/lib/cqrs';
 
 export class DeleteWatchCommand extends CommandBase {
-  public id: string;
+  public readonly id: number;
 
-  constructor(id: string) {
+  constructor(id: number) {
     super();
     this.id = id;
   }

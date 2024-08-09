@@ -1,10 +1,10 @@
 export interface IFilterBase<TId = string> {
-  ids?: TId[];
-  orderBy?: string;
-  order?: 'ASC' | 'DESC';
+  $ids?: TId[];
+  $orderBy?: string;
+  $order?: 'ASC' | 'DESC';
 }
 
-export interface IPageableFilterBase<TId = string> extends IFilterBase<TId> {
+export interface IPageableFilterBase<TId = number> extends IFilterBase<TId> {
   page?: number;
   perPage?: number;
 }

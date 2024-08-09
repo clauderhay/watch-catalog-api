@@ -2,130 +2,157 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WatchController } from './watch.controller';
 import { WatchService } from './watch.service';
 import { Watch } from 'src/database/entities/watch.entity';
-import { GetWatchesQuery } from './queries/implementation/get-watches.query';
-import { CreateWatch } from './models/create-watch.response';
+import {
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PaginatedResult } from './models/paginated-result.model';
 import { UpdateWatch } from './models/update-watch.response';
-import { CqrsModule } from '@nestjs/cqrs';
+import { CreateWatch } from './models/create-watch.response';
+import { PageableFilter } from './models/pageable-filter.model';
 
 describe('WatchController', () => {
-  let watchController: WatchController;
-  let watchService: WatchService;
+  let controller: WatchController;
+  let service: WatchService;
+
+  const mockWatchService = {
+    getWatchById: jest.fn(),
+    getWatches: jest.fn(),
+    createWatch: jest.fn(),
+    updateWatch: jest.fn(),
+    deleteWatch: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [CqrsModule],
       controllers: [WatchController],
-      providers: [
-        {
-          provide: WatchService,
-          useValue: {
-            createWatch: jest.fn(),
-            getWatches: jest.fn(),
-            getWatchById: jest.fn(),
-            updateWatch: jest.fn(),
-            deleteWatch: jest.fn(),
-          },
-        },
-      ],
+      providers: [{ provide: WatchService, useValue: mockWatchService }],
     }).compile();
 
-    watchController = module.get<WatchController>(WatchController);
-    watchService = module.get<WatchService>(WatchService);
+    controller = module.get<WatchController>(WatchController);
+    service = module.get<WatchService>(WatchService);
   });
 
-  it('should be defined', () => {
-    expect(watchController).toBeDefined();
+  describe('findOne', () => {
+    it('should return a watch', async () => {
+      const result: Watch = {
+        id: 1,
+        name: 'Rolex',
+        brand: 'Rolex',
+        referenceNumber: 'REF001',
+      };
+      jest.spyOn(service, 'getWatchById').mockResolvedValue(result);
+
+      expect(await controller.findOne(1)).toBe(result);
+    });
+
+    it('should throw NotFoundException if watch not found', async () => {
+      jest.spyOn(service, 'getWatchById').mockResolvedValue(null);
+
+      await expect(controller.findOne(1)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return a paginated result of watches', async () => {
+      const result: PaginatedResult<Watch> = {
+        items: [],
+        total: 0,
+        page: 1,
+        perPage: 10,
+      };
+      jest.spyOn(service, 'getWatches').mockResolvedValue(result);
+
+      const pageableFilterDto: PageableFilter = { page: 1, perPage: 10 };
+      expect(await controller.findAll(pageableFilterDto)).toBe(result);
+    });
+
+    it('should throw InternalServerErrorException on service error', async () => {
+      jest.spyOn(service, 'getWatches').mockRejectedValue(new Error());
+
+      const pageableFilterDto: PageableFilter = { page: 1, perPage: 10 };
+      await expect(controller.findAll(pageableFilterDto)).rejects.toThrow(
+        InternalServerErrorException,
+      );
+    });
   });
 
   describe('create', () => {
-    it('should create a new watch', async () => {
+    it('should create and return a watch', async () => {
       const createWatchDto: CreateWatch = {
         name: 'Rolex01',
         brand: 'Rolex',
         referenceNumber: 'REF001',
       };
-      const result: Watch = { id: '1', ...createWatchDto };
-      jest.spyOn(watchService, 'createWatch').mockResolvedValue(result);
+      const result: Watch = { id: 1, ...createWatchDto };
+      jest.spyOn(service, 'createWatch').mockResolvedValue(result);
 
-      expect(await watchController.create(createWatchDto)).toBe(result);
-      expect(watchService.createWatch).toHaveBeenCalledWith(createWatchDto);
+      expect(await controller.create(createWatchDto)).toEqual({
+        status: 'OK',
+        message: 'The watch has been successfully created.',
+        data: result,
+      });
     });
-  });
 
-  describe('findAll', () => {
-    it('should return a list of watches', async () => {
-      const result: PaginatedResult<Watch> = {
-        items: [
-          {
-            id: '1',
-            name: 'Rolex01',
-            brand: 'Rolex',
-            referenceNumber: 'REF001',
-          },
-        ],
-        total: 1,
-        page: 1,
-        perPage: 10,
-      };
-      const getWatchesQuery = new GetWatchesQuery(undefined, undefined, 1, 10);
-      jest.spyOn(watchService, 'getWatches').mockResolvedValue(result);
-
-      expect(await watchController.findAll()).toBe(result);
-      expect(watchService.getWatches).toHaveBeenCalledWith(getWatchesQuery);
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return a single watch by ID', async () => {
-      const result: Watch = {
-        id: '1',
+    it('should throw InternalServerErrorException on service error', async () => {
+      const createWatchDto: CreateWatch = {
         name: 'Rolex01',
         brand: 'Rolex',
         referenceNumber: 'REF001',
       };
-      jest.spyOn(watchService, 'getWatchById').mockResolvedValue(result);
+      jest.spyOn(service, 'createWatch').mockRejectedValue(new Error());
 
-      expect(await watchController.findOne('1')).toBe(result);
-      expect(watchService.getWatchById).toHaveBeenCalledWith('1');
-    });
-
-    it('should throw an exception if watch is not found', async () => {
-      jest
-        .spyOn(watchService, 'getWatchById')
-        .mockRejectedValue(new Error('Watch not found'));
-
-      await expect(watchController.findOne('1')).rejects.toThrow(
-        'Watch not found',
+      await expect(controller.create(createWatchDto)).rejects.toThrow(
+        InternalServerErrorException,
       );
     });
   });
 
   describe('update', () => {
-    it('should update a watch by ID', async () => {
-      const updateWatchDto: UpdateWatch = { name: 'Updated Rolex' };
-      const result: Watch = {
-        id: '1',
-        name: 'Updated Rolex',
-        brand: 'Rolex',
-        referenceNumber: 'REF001',
+    it('should update and return a watch', async () => {
+      const updateWatchDto: UpdateWatch = {
+        name: 'Casio Sports',
+        brand: 'Casio',
+        referenceNumber: 'REF00X1',
       };
-      jest.spyOn(watchService, 'updateWatch').mockResolvedValue(result);
+      const result: Watch = { id: 1, ...updateWatchDto };
+      jest.spyOn(service, 'updateWatch').mockResolvedValue(result);
 
-      expect(await watchController.update('1', updateWatchDto)).toBe(result);
-      expect(watchService.updateWatch).toHaveBeenCalledWith(
-        '1',
-        updateWatchDto,
+      expect(await controller.update(1, updateWatchDto)).toEqual({
+        status: 'OK',
+        message: 'The watch has been successfully updated.',
+        data: result,
+      });
+    });
+
+    it('should throw NotFoundException if watch not found', async () => {
+      const updateWatchDto: UpdateWatch = {
+        name: 'Casio Sports',
+        brand: 'Casio',
+        referenceNumber: 'REF00X1',
+      };
+      jest.spyOn(service, 'updateWatch').mockResolvedValue(null);
+
+      await expect(controller.update(1, updateWatchDto)).rejects.toThrow(
+        NotFoundException,
       );
     });
   });
 
   describe('remove', () => {
-    it('should remove a watch by ID', async () => {
-      jest.spyOn(watchService, 'deleteWatch').mockResolvedValue(undefined);
+    it('should delete a watch and return a success message', async () => {
+      jest.spyOn(service, 'deleteWatch').mockResolvedValue(true);
 
-      expect(await watchController.remove('1')).toBeUndefined();
-      expect(watchService.deleteWatch).toHaveBeenCalledWith('1');
+      expect(await controller.remove(1)).toEqual({
+        status: 'OK',
+        message: 'The watch has been successfully deleted.',
+      });
+    });
+
+    it('should throw NotFoundException if watch not found', async () => {
+      jest.spyOn(service, 'deleteWatch').mockResolvedValue(false);
+
+      await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
     });
   });
 });

@@ -4,20 +4,24 @@ import { CreateWatch } from './create-watch.response';
 
 export class PageableFilter
   extends CreateWatch
-  implements IPageableFilterBase<string>
+  implements IPageableFilterBase<number>
 {
-  @IsOptional()
-  @IsString({ each: true })
-  ids?: string[];
-
   @IsOptional()
   @IsInt()
   @Min(1)
-  page?: number;
+  page?: number = 1;
 
   @IsOptional()
   @IsInt()
   @Min(1)
   @Max(100)
-  perPage?: number;
+  perPage?: number = 10;
+
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  referenceNumber?: string;
 }

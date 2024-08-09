@@ -1,11 +1,11 @@
 import { CommandBase } from 'src/common/lib/cqrs';
 
 export class CreateWatchCommand extends CommandBase {
-  public name?: string;
+  public readonly name?: string;
 
-  public brand?: string;
+  public readonly brand?: string;
 
-  public referenceNumber?: string;
+  public readonly referenceNumber?: string;
 
   constructor(name?: string, brand?: string, referenceNumber?: string) {
     super();

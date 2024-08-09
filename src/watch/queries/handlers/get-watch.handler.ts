@@ -14,7 +14,7 @@ export class GetWatchQueryHandler
 
   public async execute(query: GetWatchQuery): Promise<Watch> {
     const { id } = query;
-    const watch = await this.repo.findOne({ where: { id } });
+    const watch = await this.repo.findOneBy({ id: id });
     if (isNilOrEmpty(watch)) {
       throw new NotFoundException(`Watch with ID ${id} not found`);
     }

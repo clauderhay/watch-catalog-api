@@ -17,6 +17,11 @@ export class CreateWatchCommandHandler
     const { name, brand, referenceNumber } = command;
     const watch = this.repo.create({ name, brand, referenceNumber });
 
-    return this.repo.save(watch);
+    try {
+      return await this.repo.save(watch);
+    } catch (error) {
+      console.error('Error creating watch:', error);
+      throw new Error('Error creating watch');
+    }
   }
 }
